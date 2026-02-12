@@ -2,6 +2,7 @@ import { useState } from "react";
 import { MapPin, Wallet, AlertTriangle, Navigation, Star, TrendingDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
+import { toast } from "sonner";
 
 // 🛑 Logic Imports
 import { isDriverEligible } from "@/lib/utils";
@@ -28,16 +29,26 @@ const DriverDashboard = () => {
   const [isOnline, setIsOnline] = useState(true);
   
   // 💰 State for the 6% Commission Ledger
-  // In a real app, 'currentDebt' would come from your Supabase/Backend
   const [currentDebt, setCurrentDebt] = useState(55.00); 
   const [bidAmounts, setBidAmounts] = useState<Record<string, number>>({});
 
   const debtLimit = 50.00; // R50 limit before lockout
   const debtPercentage = (currentDebt / debtLimit) * 100;
 
-  // 🛑 GUARD: Check if driver is blocked before rendering anything else
+  // ✅ The Unlock Logic: Triggered after successful Mobile Money payment
+  const handleManualUnlock = () => {
+    setCurrentDebt(0);
+    toast.success("Payment Received! Your account is now active.");
+  };
+
+  // 🛑 GUARD: Check if driver is blocked before rendering dashboard
   if (!isDriverEligible(currentDebt)) {
-    return <DriverBlockedScreen debtAmount={currentDebt} />;
+    return (
+      <DriverBlockedScreen 
+        debtAmount={currentDebt} 
+        onUnlock={handleManualUnlock} 
+      />
+    );
   }
 
   return (
@@ -106,7 +117,11 @@ const DriverDashboard = () => {
           
           <div className="flex justify-between mt-4">
             <span className="text-xs text-muted-foreground">{debtPercentage.toFixed(0)}% of limit used</span>
-            <Button variant="accent" size="sm" className="bg-emerald-600 text-white">
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className="bg-emerald-600/10 text-emerald-600 border-emerald-600/20 hover:bg-emerald-600 hover:text-white"
+            >
               <TrendingDown className="w-4 h-4 mr-2" /> Pay via MoMo
             </Button>
           </div>
@@ -122,9 +137,10 @@ const DriverDashboard = () => {
 
         <div className="space-y-4">
           <AnimatePresence>
-            {mockRequests.map((req, i) => (
+            {mockRequests.map((req) => (
               <motion.div
                 key={req.id}
+                layout
                 initial={{ opacity: 0, x: -10 }}
                 animate={{ opacity: 1, x: 0 }}
                 className="rounded-xl bg-card border border-border shadow-card p-5"
