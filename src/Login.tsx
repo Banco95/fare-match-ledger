@@ -1,77 +1,76 @@
-import { useState } from "react";
-import { Smartphone, ArrowRight, ShieldCheck, Globe } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { motion } from "framer-motion";
+export const globalCountries = [
+  // --- AFRIKA (54 länder) ---
+  { code: "DZ", name: "Algeria", dial: "+213", currency: "DZD", flag: "🇩🇿" },
+  { code: "AO", name: "Angola", dial: "+244", currency: "AOA", flag: "🇦🇴" },
+  { code: "BJ", name: "Benin", dial: "+229", currency: "XOF", flag: "🇧🇯" },
+  { code: "BW", name: "Botswana", dial: "+267", currency: "BWP", flag: "🇧🇼" },
+  { code: "BF", name: "Burkina Faso", dial: "+226", currency: "XOF", flag: "🇧🇫" },
+  { code: "BI", name: "Burundi", dial: "+257", currency: "BIF", flag: "🇧🇮" },
+  { code: "CV", name: "Cabo Verde", dial: "+238", currency: "CVE", flag: "🇨🇻" },
+  { code: "CM", name: "Cameroon", dial: "+237", currency: "XAF", flag: "🇨🇲" },
+  { code: "CF", name: "Central African Republic", dial: "+236", currency: "XAF", flag: "🇨🇫" },
+  { code: "TD", name: "Chad", dial: "+235", currency: "XAF", flag: "🇹🇩" },
+  { code: "KM", name: "Comoros", dial: "+269", currency: "KMF", flag: "🇰🇲" },
+  { code: "CD", name: "DR Congo", dial: "+243", currency: "CDF", flag: "🇨🇩" },
+  { code: "CG", name: "Congo", dial: "+242", currency: "XAF", flag: "🇨🇬" },
+  { code: "CI", name: "Côte d'Ivoire", dial: "+225", currency: "XOF", flag: "🇨🇮" },
+  { code: "DJ", name: "Djibouti", dial: "+253", currency: "DJF", flag: "🇩🇯" },
+  { code: "EG", name: "Egypt", dial: "+20", currency: "EGP", flag: "🇪🇬" },
+  { code: "GQ", name: "Equatorial Guinea", dial: "+240", currency: "XAF", flag: "🇬🇶" },
+  { code: "ER", name: "Eritrea", dial: "+291", currency: "ERN", flag: "🇪🇷" },
+  { code: "SZ", name: "Eswatini", dial: "+268", currency: "SZL", flag: "🇸🇿" },
+  { code: "ET", name: "Ethiopia", dial: "+251", currency: "ETB", flag: "🇪🇹" },
+  { code: "GA", name: "Gabon", dial: "+241", currency: "XAF", flag: "🇬🇦" },
+  { code: "GM", name: "Gambia", dial: "+220", currency: "GMD", flag: "🇬🇲" },
+  { code: "GH", name: "Ghana", dial: "+233", currency: "GHS", flag: "🇬🇭" },
+  { code: "GN", name: "Guinea", dial: "+224", currency: "GNF", flag: "🇬🇳" },
+  { code: "GW", name: "Guinea-Bissau", dial: "+245", currency: "XOF", flag: "🇬🇼" },
+  { code: "KE", name: "Kenya", dial: "+254", currency: "KES", flag: "🇰🇪" },
+  { code: "LS", name: "Lesotho", dial: "+266", currency: "LSL", flag: "🇱🇸" },
+  { code: "LR", name: "Liberia", dial: "+231", currency: "LRD", flag: "🇱🇷" },
+  { code: "LY", name: "Libya", dial: "+218", currency: "LYD", flag: "🇱🇾" },
+  { code: "MG", name: "Madagascar", dial: "+261", currency: "MGA", flag: "🇲🇬" },
+  { code: "MW", name: "Malawi", dial: "+265", currency: "MWK", flag: "🇲🇼" },
+  { code: "ML", name: "Mali", dial: "+223", currency: "XOF", flag: "🇲🇱" },
+  { code: "MR", name: "Mauritania", dial: "+222", currency: "MRU", flag: "🇲🇷" },
+  { code: "MU", name: "Mauritius", dial: "+230", currency: "MUR", flag: "🇲🇺" },
+  { code: "MA", name: "Morocco", dial: "+212", currency: "MAD", flag: "🇲🇦" },
+  { code: "MZ", name: "Mozambique", dial: "+258", currency: "MZN", flag: "🇲🇿" },
+  { code: "NA", name: "Namibia", dial: "+264", currency: "NAD", flag: "🇳🇦" },
+  { code: "NE", name: "Niger", dial: "+227", currency: "XOF", flag: "🇳🇪" },
+  { code: "NG", name: "Nigeria", dial: "+234", currency: "NGN", flag: "🇳🇬" },
+  { code: "RW", name: "Rwanda", dial: "+250", currency: "RWF", flag: "🇷🇼" },
+  { code: "ST", name: "Sao Tome and Principe", dial: "+239", currency: "STN", flag: "🇸🇹" },
+  { code: "SN", name: "Senegal", dial: "+221", currency: "XOF", flag: "🇸🇳" },
+  { code: "SC", name: "Seychelles", dial: "+248", currency: "SCR", flag: "🇸🇨" },
+  { code: "SL", name: "Sierra Leone", dial: "+232", currency: "SLL", flag: "🇸🇱" },
+  { code: "SO", name: "Somalia", dial: "+252", currency: "SOS", flag: "🇸🇴" },
+  { code: "ZA", name: "South Africa", dial: "+27", currency: "ZAR", flag: "🇿🇦" },
+  { code: "SS", name: "South Sudan", dial: "+211", currency: "SSP", flag: "🇸🇸" },
+  { code: "SD", name: "Sudan", dial: "+249", currency: "SDG", flag: "🇸🇩" },
+  { code: "TZ", name: "Tanzania", dial: "+255", currency: "TZS", flag: "🇹🇿" },
+  { code: "TG", name: "Togo", dial: "+228", currency: "XOF", flag: "🇹🇬" },
+  { code: "TN", name: "Tunisia", dial: "+216", currency: "TND", flag: "🇹🇳" },
+  { code: "UG", name: "Uganda", dial: "+256", currency: "UGX", flag: "🇺🇬" },
+  { code: "ZM", name: "Zambia", dial: "+260", currency: "ZMW", flag: "🇿🇲" },
+  { code: "ZW", name: "Zimbabwe", dial: "+263", currency: "ZWL", flag: "🇿🇼" },
 
-const Login = () => {
-  const [phoneNumber, setPhoneNumber] = useState("");
-  const [country, setCountry] = useState<'ZA' | 'KE'>('ZA');
-
-  return (
-    <div className="min-h-screen bg-background flex flex-col p-6 justify-between">
-      <div className="mt-12">
-        <motion.div 
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="flex items-center gap-2 mb-8"
-        >
-          <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center">
-            <ShieldCheck className="text-white w-6 h-6" />
-          </div>
-          <h1 className="text-2xl font-heading font-bold tracking-tighter">RideoBid</h1>
-        </motion.div>
-
-        <h2 className="text-4xl font-heading font-bold mb-4">Välkommen tillbaka</h2>
-        <p className="text-muted-foreground mb-10">Ange ditt mobilnummer för att logga in eller skapa ett konto.</p>
-
-        <div className="space-y-4">
-          {/* Landväljare */}
-          <div className="flex gap-2 p-1 bg-muted rounded-2xl">
-            <button 
-              onClick={() => setCountry('ZA')}
-              className={`flex-1 py-3 rounded-xl text-sm font-bold transition-all ${country === 'ZA' ? 'bg-white shadow-sm' : 'text-muted-foreground'}`}
-            >
-              🇿🇦 Sydafrika
-            </button>
-            <button 
-              onClick={() => setCountry('KE')}
-              className={`flex-1 py-3 rounded-xl text-sm font-bold transition-all ${country === 'KE' ? 'bg-white shadow-sm' : 'text-muted-foreground'}`}
-            >
-              🇰🇪 Kenya
-            </button>
-          </div>
-
-          {/* Telefonnummer Input */}
-          <div className="relative">
-            <div className="absolute left-4 top-1/2 -translate-y-1/2 flex items-center gap-2 font-bold text-sm border-r pr-3">
-              <Globe className="w-4 h-4 text-muted-foreground" />
-              <span>{country === 'ZA' ? '+27' : '+254'}</span>
-            </div>
-            <input 
-              type="tel"
-              placeholder="000 000 000"
-              value={phoneNumber}
-              onChange={(e) => setPhoneNumber(e.target.value)}
-              className="w-full h-16 pl-24 pr-6 bg-card border border-border rounded-2xl text-lg font-bold outline-none focus:border-primary transition-colors"
-            />
-          </div>
-        </div>
-      </div>
-
-      <div className="space-y-6">
-        <p className="text-[11px] text-center text-muted-foreground px-6 leading-relaxed">
-          Genom att fortsätta godkänner du våra användarvillkor och bekräftar att du är över 18 år.
-        </p>
-        
-        <Button 
-          disabled={phoneNumber.length < 7}
-          className="w-full h-16 rounded-2xl text-lg font-bold shadow-glow flex items-center justify-center gap-3"
-        >
-          Fortsätt <ArrowRight className="w-5 h-5" />
-        </Button>
-      </div>
-    </div>
-  );
-};
-
-export default Login;
+  // --- EUROPA (Urval av 44 länder) ---
+  { code: "SE", name: "Sweden", dial: "+46", currency: "SEK", flag: "🇸🇪" },
+  { code: "NO", name: "Norway", dial: "+47", currency: "NOK", flag: "🇳🇴" },
+  { code: "DK", name: "Denmark", dial: "+45", currency: "DKK", flag: "🇩🇰" },
+  { code: "FI", name: "Finland", dial: "+358", currency: "EUR", flag: "🇫🇮" },
+  { code: "DE", name: "Germany", dial: "+49", currency: "EUR", flag: "🇩🇪" },
+  { code: "FR", name: "France", dial: "+33", currency: "EUR", flag: "🇫🇷" },
+  { code: "GB", name: "United Kingdom", dial: "+44", currency: "GBP", flag: "🇬🇧" },
+  { code: "IT", name: "Italy", dial: "+39", currency: "EUR", flag: "🇮🇹" },
+  { code: "ES", name: "Spain", dial: "+34", currency: "EUR", flag: "🇪🇸" },
+  { code: "NL", name: "Netherlands", dial: "+31", currency: "EUR", flag: "🇳🇱" },
+  { code: "BE", name: "Belgium", dial: "+32", currency: "EUR", flag: "🇧🇪" },
+  { code: "CH", name: "Switzerland", dial: "+41", currency: "CHF", flag: "🇨🇭" },
+  { code: "AT", name: "Austria", dial: "+43", currency: "EUR", flag: "🇦🇹" },
+  { code: "PL", name: "Poland", dial: "+48", currency: "PLN", flag: "🇵🇱" },
+  { code: "PT", name: "Portugal", dial: "+351", currency: "EUR", flag: "🇵🇹" },
+  { code: "GR", name: "Greece", dial: "+30", currency: "EUR", flag: "🇬🇷" },
+  { code: "IE", name: "Ireland", dial: "+353", currency: "EUR", flag: "🇮🇪" },
+];
