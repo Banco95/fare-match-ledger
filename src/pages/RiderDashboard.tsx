@@ -1,160 +1,169 @@
-import { useState } from "react";
-import { MapPin, Star, ChevronUp, ChevronDown, Check } from "lucide-react";
+import { useState, useEffect } from "react";
+import { MapPin, Clock, DollarSign, Zap, Navigation, Wallet } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
-import MarketComparison from "@/components/MarketComparison"; // 🚀 Added this
+import { toast } from "sonner";
 
-interface Bid {
-  id: string;
-  driverName: string;
-  rating: number;
-  trips: number;
-  amount: number;
-  eta: string;
-  vehicle: string;
-}
-
-interface TripRequest {
+interface LiveRequest {
   id: string;
   pickup: string;
   dropoff: string;
-  suggestedPrice: number;
-  status: "pending" | "bidding" | "matched" | "completed";
-  bids: Bid[];
-  createdAt: string;
+  distance: string;
+  riderName: string;
+  riderRating: number;
+  bidAmount: number;
+  paymentMethod: "Cash" | "Card" | "EFT";
+  expiresIn: number; // seconds
 }
 
-const mockTrips: TripRequest[] = [
+const mockRequests: LiveRequest[] = [
   {
-    id: "1",
+    id: "r1",
     pickup: "Sandton City",
-    dropoff: "OR Tambo Airport",
-    suggestedPrice: 450,
-    status: "bidding",
-    createdAt: "2 min ago",
-    bids: [
-      { id: "b1", driverName: "James M.", rating: 4.8, trips: 342, amount: 450, eta: "4 min", vehicle: "Toyota Corolla" },
-      { id: "b2", driverName: "Sarah K.", rating: 4.9, trips: 567, amount: 480, eta: "6 min", vehicle: "VW Polo" },
-    ],
+    dropoff: "Rosebank Mall",
+    distance: "4.2 km",
+    riderName: "Alex M.",
+    riderRating: 4.9,
+    bidAmount: 85,
+    paymentMethod: "Cash",
+    expiresIn: 45,
   },
+  {
+    id: "r2",
+    pickup: "Morningside",
+    dropoff: "Bryanston",
+    distance: "6.8 km",
+    riderName: "Thabo K.",
+    riderRating: 4.7,
+    bidAmount: 120,
+    paymentMethod: "Card",
+    expiresIn: 30,
+  }
 ];
 
-const RiderDashboard = () => {
-  const [trips] = useState<TripRequest[]>(mockTrips);
-  const [expandedTrip, setExpandedTrip] = useState<string | null>("1");
-  const [showForm, setShowForm] = useState(false);
+const DriverDashboard = () => {
+  const [activeRequests, setActiveRequests] = useState<LiveRequest[]>(mockRequests);
+  const [isOnline, setIsOnline] = useState(false);
+
+  const handleAccept = (requestId: string) => {
+    toast.success("Ride Accepted! Navigating to pickup...");
+    setActiveRequests(prev => prev.filter(r => r.id !== requestId));
+  };
 
   return (
-    <div className="min-h-screen bg-background font-body">
-      {/* Header */}
-      <header className="sticky top-0 z-40 bg-card/80 backdrop-blur-xl border-b border-border">
-        <div className="container mx-auto px-4 h-16 flex items-center justify-between">
-          <a href="/" className="text-xl font-heading font-bold text-gradient-primary">RideoBid</a>
-          <div className="flex items-center gap-3">
-            <span className="text-sm text-muted-foreground">Hi, Alex</span>
-            <div className="w-8 h-8 rounded-full bg-gradient-primary flex items-center justify-center text-primary-foreground text-sm font-bold">A</div>
+    <div className="min-h-screen bg-background">
+      {/* Header with Earnings & Status */}
+      <header className="sticky top-0 z-40 bg-card/80 backdrop-blur-xl border-b border-border p-4">
+        <div className="container mx-auto max-w-2xl flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <div className="p-2 bg-primary/10 rounded-lg">
+              <Wallet className="w-5 h-5 text-primary" />
+            </div>
+            <div>
+              <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider">Today's Earnings</p>
+              <p className="text-xl font-heading font-bold">R 1,240.50</p>
+            </div>
+          </div>
+          
+          <div className="flex items-center gap-2">
+            <span className={`text-xs font-bold ${isOnline ? "text-success" : "text-muted-foreground"}`}>
+              {isOnline ? "ONLINE" : "OFFLINE"}
+            </span>
+            <button 
+              onClick={() => setIsOnline(!isOnline)}
+              className={`w-12 h-6 rounded-full p-1 transition-colors ${isOnline ? "bg-success" : "bg-muted"}`}
+            >
+              <div className={`w-4 h-4 bg-white rounded-full transition-transform ${isOnline ? "translate-x-6" : ""}`} />
+            </button>
           </div>
         </div>
       </header>
 
-      <main className="container mx-auto px-4 py-8 max-w-2xl">
-        <div className="flex items-center justify-between mb-8">
-          <div>
-            <h1 className="text-2xl font-heading font-bold text-foreground">My Trips</h1>
-            <p className="text-muted-foreground text-sm">Compare rates and set your bid</p>
+      <main className="container mx-auto px-4 py-6 max-w-2xl">
+        <div className="mb-6">
+          <h1 className="text-2xl font-heading font-bold">Available Bids</h1>
+          <p className="text-muted-foreground text-sm">Nearby riders looking for a trip</p>
+        </div>
+
+        {!isOnline ? (
+          <div className="text-center py-20 bg-muted/20 rounded-3xl border-2 border-dashed border-border">
+            <Zap className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+            <p className="text-muted-foreground">Go online to start receiving ride requests</p>
           </div>
-          <Button className="bg-gradient-primary text-white rounded-xl" onClick={() => setShowForm(!showForm)}>
-            {showForm ? "Close" : "+ New Trip"}
-          </Button>
-        </div>
-
-        {/* New Trip Form with Market Comparison Logic */}
-        <AnimatePresence>
-          {showForm && (
-            <motion.div
-              initial={{ opacity: 0, y: -20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              className="mb-8"
-            >
-              <div className="p-6 rounded-2xl bg-card border border-border shadow-elevated space-y-4">
-                <div className="space-y-3">
-                  <div className="relative">
-                    <MapPin className="absolute left-3 top-3 w-4 h-4 text-primary" />
-                    <input className="w-full pl-10 pr-4 py-2.5 rounded-lg bg-muted border-none text-sm focus:ring-2 focus:ring-primary" placeholder="Pickup location" />
-                  </div>
-                  <div className="relative">
-                    <MapPin className="absolute left-3 top-3 w-4 h-4 text-accent" />
-                    <input className="w-full pl-10 pr-4 py-2.5 rounded-lg bg-muted border-none text-sm focus:ring-2 focus:ring-primary" placeholder="Dropoff location" />
-                  </div>
-                </div>
-
-                {/* 🚀 Integrated Market Comparison Logic here */}
-                <div className="pt-4 border-t border-border">
-                  <p className="text-xs font-bold text-muted-foreground uppercase mb-4 tracking-widest text-center">Market Rate Discovery</p>
-                  <MarketComparison />
-                </div>
-
-                <Button className="w-full bg-gradient-primary text-white py-6 rounded-xl text-lg font-heading font-bold shadow-glow hover:opacity-90">
-                  Post Trip Request
-                </Button>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-        {/* Trip List */}
-        <div className="space-y-4">
-          {trips.map((trip) => (
-            <motion.div key={trip.id} layout className="rounded-xl bg-card border border-border shadow-card overflow-hidden">
-              <div className="p-5 cursor-pointer" onClick={() => setExpandedTrip(expandedTrip === trip.id ? null : trip.id)}>
-                <div className="flex items-start justify-between">
-                  <div className="space-y-2">
-                    <div className="flex items-center gap-2 text-sm font-medium"><div className="w-2 h-2 rounded-full bg-primary" /> {trip.pickup}</div>
-                    <div className="flex items-center gap-2 text-sm font-medium"><div className="w-2 h-2 rounded-full bg-accent" /> {trip.dropoff}</div>
-                  </div>
-                  <div className="text-right">
-                    <span className="text-lg font-heading font-bold text-foreground">R{trip.suggestedPrice}</span>
-                    <div className="flex items-center justify-end text-xs text-primary font-bold">
-                       {trip.bids.length} Bids {expandedTrip === trip.id ? <ChevronUp className="ml-1 w-4 h-4" /> : <ChevronDown className="ml-1 w-4 h-4" />}
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Bids Dropdown */}
-              <AnimatePresence>
-                {expandedTrip === trip.id && (
-                  <motion.div initial={{ height: 0 }} animate={{ height: "auto" }} exit={{ height: 0 }} className="overflow-hidden border-t border-border bg-muted/20">
-                    <div className="p-4 space-y-3">
-                      {trip.bids.map((bid) => (
-                        <div key={bid.id} className="flex items-center justify-between p-3 rounded-xl bg-card border border-border">
-                          <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold">{bid.driverName.charAt(0)}</div>
-                            <div>
-                              <div className="flex items-center gap-1">
-                                <span className="text-sm font-bold">{bid.driverName}</span>
-                                <span className="text-xs text-accent flex items-center"><Star className="w-3 h-3 fill-current mr-0.5" /> {bid.rating}</span>
-                              </div>
-                              <p className="text-[10px] text-muted-foreground">{bid.vehicle} • {bid.eta} away</p>
-                            </div>
-                          </div>
-                          <div className="flex items-center gap-3">
-                            <span className="font-heading font-bold">R{bid.amount}</span>
-                            <Button size="sm" className="bg-primary text-white rounded-lg h-8">Accept</Button>
-                          </div>
+        ) : (
+          <div className="space-y-4">
+            <AnimatePresence>
+              {activeRequests.map((request) => (
+                <motion.div
+                  key={request.id}
+                  layout
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, x: 100 }}
+                  className="bg-card border-2 border-border rounded-2xl overflow-hidden shadow-elevated"
+                >
+                  <div className="p-5">
+                    <div className="flex justify-between items-start mb-4">
+                      <div className="flex items-center gap-2">
+                        <div className="w-10 h-10 rounded-full bg-accent/10 flex items-center justify-center font-bold text-accent">
+                          {request.riderName.charAt(0)}
                         </div>
-                      ))}
+                        <div>
+                          <p className="font-bold">{request.riderName}</p>
+                          <p className="text-xs text-muted-foreground">⭐ {request.riderRating} Rider</p>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-2xl font-heading font-bold text-primary">R{request.bidAmount}</p>
+                        <span className="text-[10px] bg-muted px-2 py-1 rounded font-bold">
+                          {request.paymentMethod.toUpperCase()}
+                        </span>
+                      </div>
                     </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </motion.div>
-          ))}
-        </div>
+
+                    <div className="space-y-3 mb-6 relative">
+                      <div className="absolute left-[7px] top-3 bottom-3 w-0.5 bg-border" />
+                      <div className="flex items-center gap-3 relative z-10">
+                        <div className="w-3 h-3 rounded-full bg-primary border-2 border-background" />
+                        <p className="text-sm font-medium">{request.pickup}</p>
+                      </div>
+                      <div className="flex items-center gap-3 relative z-10">
+                        <div className="w-3 h-3 rounded-full bg-accent border-2 border-background" />
+                        <p className="text-sm font-medium">{request.dropoff}</p>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-3">
+                      <Button 
+                        variant="outline" 
+                        className="rounded-xl border-border text-foreground hover:bg-muted"
+                      >
+                        Counter Offer
+                      </Button>
+                      <Button 
+                        onClick={() => handleAccept(request.id)}
+                        className="bg-gradient-primary text-white rounded-xl shadow-glow"
+                      >
+                        Accept Ride
+                      </Button>
+                    </div>
+                  </div>
+                  
+                  {/* Progress bar for expiry */}
+                  <motion.div 
+                    initial={{ width: "100%" }}
+                    animate={{ width: "0%" }}
+                    transition={{ duration: request.expiresIn, ease: "linear" }}
+                    className="h-1 bg-primary/30"
+                  />
+                </motion.div>
+              ))}
+            </AnimatePresence>
+          </div>
+        )}
       </main>
     </div>
   );
 };
 
-export default RiderDashboard;
+export default DriverDashboard;
