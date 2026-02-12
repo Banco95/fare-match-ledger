@@ -1,32 +1,44 @@
-import { Toaster } from "@/components/ui/toaster";
-import { Toaster as Sonner } from "@/components/ui/sonner";
-import { TooltipProvider } from "@/components/ui/tooltip";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { Toaster } from "sonner";
 import Index from "./pages/Index";
-import RiderDashboard from "./pages/RiderDashboard";
+import Login from "./pages/Login";
 import DriverDashboard from "./pages/DriverDashboard";
-import AdminPanel from "./pages/AdminPanel";
-import NotFound from "./pages/NotFound";
+import RiderCreateRequest from "./pages/RiderCreateRequest";
+import RiderMatchSuccess from "./pages/RiderMatchSuccess";
+import RiderTripProgress from "./pages/RiderTripProgress";
+import AdminVerificationQueue from "./pages/AdminVerificationQueue";
+import { SettingsProvider } from "./contexts/SettingsContext";
 
-const queryClient = new QueryClient();
+function App() {
+  return (
+    <SettingsProvider>
+      <Router>
+        <div className="min-h-screen bg-background font-sans antialiased">
+          <Routes>
+            {/* Startsidan som du ser på din skärmbild */}
+            <Route path="/" element={<Index />} />
+            
+            {/* Inloggning för både Rider & Driver */}
+            <Route path="/login" element={<Login />} />
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Index />} />
-          <Route path="/rider" element={<RiderDashboard />} />
-          <Route path="/driver" element={<DriverDashboard />} />
-          <Route path="/admin" element={<AdminPanel />} />
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </BrowserRouter>
-    </TooltipProvider>
-  </QueryClientProvider>
-);
+            {/* FÖRAR-FLÖDE */}
+            <Route path="/driver-dashboard" element={<DriverDashboard />} />
+            
+            {/* PASSAGERAR-FLÖDE */}
+            <Route path="/rider-setup" element={<RiderCreateRequest />} />
+            <Route path="/match-found" element={<RiderMatchSuccess />} />
+            <Route path="/trip-active" element={<RiderTripProgress />} />
+
+            {/* ADMIN-FLÖDE (Där du verifierar ID:n) */}
+            <Route path="/admin/verify" element={<AdminVerificationQueue />} />
+          </Routes>
+          
+          {/* Globala notiser för betalningar och KYC-status */}
+          <Toaster position="top-center" richColors />
+        </div>
+      </Router>
+    </SettingsProvider>
+  );
+}
 
 export default App;
