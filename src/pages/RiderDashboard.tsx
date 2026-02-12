@@ -4,6 +4,10 @@ import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 
+// 🛑 Logic & Guard Imports
+import { isDriverEligible } from "@/lib/utils";
+import DriverBlockedScreen from "@/components/DriverBlockedScreen";
+
 interface LiveRequest {
   id: string;
   pickup: string;
@@ -42,8 +46,16 @@ const mockRequests: LiveRequest[] = [
 ];
 
 const DriverDashboard = () => {
+  // 💰 Current Debt state (simulating data from your database)
+  const [currentDebt, setCurrentDebt] = useState(55.00); 
   const [activeRequests, setActiveRequests] = useState<LiveRequest[]>(mockRequests);
   const [isOnline, setIsOnline] = useState(false);
+
+  // 🛑 THE SAFETY GATE: Stop blocked drivers immediately
+  // If currentDebt > 50, this returns the Blocked UI and stops execution here.
+  if (!isDriverEligible(currentDebt)) {
+    return <DriverBlockedScreen debtAmount={currentDebt} />;
+  }
 
   const handleAccept = (requestId: string) => {
     toast.success("Ride Accepted! Navigating to pickup...");
@@ -80,6 +92,16 @@ const DriverDashboard = () => {
       </header>
 
       <main className="container mx-auto px-4 py-6 max-w-2xl">
+        {/* Debt Warning for Active Drivers (if getting close to R50) */}
+        {currentDebt > 40 && (
+          <div className="mb-6 p-4 bg-amber-500/10 border border-amber-500/20 rounded-2xl flex items-center justify-between">
+            <p className="text-xs text-amber-700 font-medium">
+              Warning: Your unpaid commission is **R {currentDebt.toFixed(2)}**. Settle soon to avoid lockout.
+            </p>
+            <Button size="sm" variant="outline" className="text-[10px] h-7 border-amber-500 text-amber-700">Pay Now</Button>
+          </div>
+        )}
+
         <div className="mb-6">
           <h1 className="text-2xl font-heading font-bold">Available Bids</h1>
           <p className="text-muted-foreground text-sm">Nearby riders looking for a trip</p>
@@ -115,8 +137,8 @@ const DriverDashboard = () => {
                       </div>
                       <div className="text-right">
                         <p className="text-2xl font-heading font-bold text-primary">R{request.bidAmount}</p>
-                        <span className="text-[10px] bg-muted px-2 py-1 rounded font-bold">
-                          {request.paymentMethod.toUpperCase()}
+                        <span className="text-[10px] bg-muted px-2 py-1 rounded font-bold uppercase">
+                          {request.paymentMethod}
                         </span>
                       </div>
                     </div>
@@ -149,7 +171,6 @@ const DriverDashboard = () => {
                     </div>
                   </div>
                   
-                  {/* Progress bar for expiry */}
                   <motion.div 
                     initial={{ width: "100%" }}
                     animate={{ width: "0%" }}
