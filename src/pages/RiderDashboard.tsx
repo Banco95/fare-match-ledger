@@ -1,7 +1,8 @@
 import { useState } from "react";
-import { MapPin, Clock, DollarSign, User, Star, ChevronUp, ChevronDown, Check } from "lucide-react";
+import { MapPin, Star, ChevronUp, ChevronDown, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
+import MarketComparison from "@/components/MarketComparison"; // 🚀 Added this
 
 interface Bid {
   id: string;
@@ -26,25 +27,15 @@ interface TripRequest {
 const mockTrips: TripRequest[] = [
   {
     id: "1",
-    pickup: "Westlands Mall",
-    dropoff: "JKIA Airport",
-    suggestedPrice: 1500,
+    pickup: "Sandton City",
+    dropoff: "OR Tambo Airport",
+    suggestedPrice: 450,
     status: "bidding",
     createdAt: "2 min ago",
     bids: [
-      { id: "b1", driverName: "James M.", rating: 4.8, trips: 342, amount: 1500, eta: "4 min", vehicle: "Toyota Vitz" },
-      { id: "b2", driverName: "Sarah K.", rating: 4.9, trips: 567, amount: 1600, eta: "6 min", vehicle: "Honda Fit" },
-      { id: "b3", driverName: "Peter O.", rating: 4.6, trips: 128, amount: 1400, eta: "3 min", vehicle: "Suzuki Alto" },
+      { id: "b1", driverName: "James M.", rating: 4.8, trips: 342, amount: 450, eta: "4 min", vehicle: "Toyota Corolla" },
+      { id: "b2", driverName: "Sarah K.", rating: 4.9, trips: 567, amount: 480, eta: "6 min", vehicle: "VW Polo" },
     ],
-  },
-  {
-    id: "2",
-    pickup: "CBD Archives",
-    dropoff: "Karen Hub",
-    suggestedPrice: 800,
-    status: "pending",
-    createdAt: "5 min ago",
-    bids: [],
   },
 ];
 
@@ -54,7 +45,7 @@ const RiderDashboard = () => {
   const [showForm, setShowForm] = useState(false);
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background font-body">
       {/* Header */}
       <header className="sticky top-0 z-40 bg-card/80 backdrop-blur-xl border-b border-border">
         <div className="container mx-auto px-4 h-16 flex items-center justify-between">
@@ -70,51 +61,43 @@ const RiderDashboard = () => {
         <div className="flex items-center justify-between mb-8">
           <div>
             <h1 className="text-2xl font-heading font-bold text-foreground">My Trips</h1>
-            <p className="text-muted-foreground text-sm">Post a trip and get bids from nearby drivers</p>
+            <p className="text-muted-foreground text-sm">Compare rates and set your bid</p>
           </div>
-          <Button variant="hero" onClick={() => setShowForm(!showForm)}>
-            + New Trip
+          <Button className="bg-gradient-primary text-white rounded-xl" onClick={() => setShowForm(!showForm)}>
+            {showForm ? "Close" : "+ New Trip"}
           </Button>
         </div>
 
-        {/* New Trip Form */}
+        {/* New Trip Form with Market Comparison Logic */}
         <AnimatePresence>
           {showForm && (
             <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: "auto" }}
-              exit={{ opacity: 0, height: 0 }}
-              className="mb-8 overflow-hidden"
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              className="mb-8"
             >
-              <div className="p-6 rounded-xl bg-card border border-border shadow-elevated">
-                <h3 className="font-heading font-semibold text-card-foreground mb-4">Request a Ride</h3>
-                <div className="space-y-4">
+              <div className="p-6 rounded-2xl bg-card border border-border shadow-elevated space-y-4">
+                <div className="space-y-3">
                   <div className="relative">
                     <MapPin className="absolute left-3 top-3 w-4 h-4 text-primary" />
-                    <input
-                      className="w-full pl-10 pr-4 py-2.5 rounded-lg bg-muted border border-border text-foreground placeholder:text-muted-foreground text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-                      placeholder="Pickup location"
-                    />
+                    <input className="w-full pl-10 pr-4 py-2.5 rounded-lg bg-muted border-none text-sm focus:ring-2 focus:ring-primary" placeholder="Pickup location" />
                   </div>
                   <div className="relative">
                     <MapPin className="absolute left-3 top-3 w-4 h-4 text-accent" />
-                    <input
-                      className="w-full pl-10 pr-4 py-2.5 rounded-lg bg-muted border border-border text-foreground placeholder:text-muted-foreground text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-                      placeholder="Dropoff location"
-                    />
+                    <input className="w-full pl-10 pr-4 py-2.5 rounded-lg bg-muted border-none text-sm focus:ring-2 focus:ring-primary" placeholder="Dropoff location" />
                   </div>
-                  <div className="relative">
-                    <DollarSign className="absolute left-3 top-3 w-4 h-4 text-muted-foreground" />
-                    <input
-                      type="number"
-                      className="w-full pl-10 pr-4 py-2.5 rounded-lg bg-muted border border-border text-foreground placeholder:text-muted-foreground text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-                      placeholder="Suggested price (KES)"
-                    />
-                  </div>
-                  <Button variant="hero" className="w-full" size="lg">
-                    Post Trip Request
-                  </Button>
                 </div>
+
+                {/* 🚀 Integrated Market Comparison Logic here */}
+                <div className="pt-4 border-t border-border">
+                  <p className="text-xs font-bold text-muted-foreground uppercase mb-4 tracking-widest text-center">Market Rate Discovery</p>
+                  <MarketComparison />
+                </div>
+
+                <Button className="w-full bg-gradient-primary text-white py-6 rounded-xl text-lg font-heading font-bold shadow-glow hover:opacity-90">
+                  Post Trip Request
+                </Button>
               </div>
             </motion.div>
           )}
@@ -123,71 +106,42 @@ const RiderDashboard = () => {
         {/* Trip List */}
         <div className="space-y-4">
           {trips.map((trip) => (
-            <motion.div
-              key={trip.id}
-              layout
-              className="rounded-xl bg-card border border-border shadow-card overflow-hidden"
-            >
-              <div
-                className="p-5 cursor-pointer hover:bg-muted/50 transition-colors"
-                onClick={() => setExpandedTrip(expandedTrip === trip.id ? null : trip.id)}
-              >
+            <motion.div key={trip.id} layout className="rounded-xl bg-card border border-border shadow-card overflow-hidden">
+              <div className="p-5 cursor-pointer" onClick={() => setExpandedTrip(expandedTrip === trip.id ? null : trip.id)}>
                 <div className="flex items-start justify-between">
-                  <div className="space-y-2 flex-1">
-                    <div className="flex items-center gap-2">
-                      <div className="w-2 h-2 rounded-full bg-primary" />
-                      <span className="text-sm font-medium text-card-foreground">{trip.pickup}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <div className="w-2 h-2 rounded-full bg-accent" />
-                      <span className="text-sm font-medium text-card-foreground">{trip.dropoff}</span>
-                    </div>
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2 text-sm font-medium"><div className="w-2 h-2 rounded-full bg-primary" /> {trip.pickup}</div>
+                    <div className="flex items-center gap-2 text-sm font-medium"><div className="w-2 h-2 rounded-full bg-accent" /> {trip.dropoff}</div>
                   </div>
-                  <div className="text-right flex flex-col items-end gap-1">
-                    <span className="text-lg font-heading font-bold text-foreground">KES {trip.suggestedPrice}</span>
-                    <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
-                      trip.status === "bidding" ? "bg-primary/10 text-primary" :
-                      trip.status === "pending" ? "bg-warning/10 text-warning" :
-                      "bg-success/10 text-success"
-                    }`}>
-                      {trip.status === "bidding" ? `${trip.bids.length} bids` : trip.status}
-                    </span>
-                    {expandedTrip === trip.id ? <ChevronUp className="w-4 h-4 text-muted-foreground" /> : <ChevronDown className="w-4 h-4 text-muted-foreground" />}
+                  <div className="text-right">
+                    <span className="text-lg font-heading font-bold text-foreground">R{trip.suggestedPrice}</span>
+                    <div className="flex items-center justify-end text-xs text-primary font-bold">
+                       {trip.bids.length} Bids {expandedTrip === trip.id ? <ChevronUp className="ml-1 w-4 h-4" /> : <ChevronDown className="ml-1 w-4 h-4" />}
+                    </div>
                   </div>
                 </div>
               </div>
 
+              {/* Bids Dropdown */}
               <AnimatePresence>
-                {expandedTrip === trip.id && trip.bids.length > 0 && (
-                  <motion.div
-                    initial={{ height: 0 }}
-                    animate={{ height: "auto" }}
-                    exit={{ height: 0 }}
-                    className="overflow-hidden border-t border-border"
-                  >
-                    <div className="p-4 space-y-3 bg-muted/30">
-                      <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Driver Bids</p>
+                {expandedTrip === trip.id && (
+                  <motion.div initial={{ height: 0 }} animate={{ height: "auto" }} exit={{ height: 0 }} className="overflow-hidden border-t border-border bg-muted/20">
+                    <div className="p-4 space-y-3">
                       {trip.bids.map((bid) => (
-                        <div key={bid.id} className="flex items-center justify-between p-3 rounded-lg bg-card border border-border">
+                        <div key={bid.id} className="flex items-center justify-between p-3 rounded-xl bg-card border border-border">
                           <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-full bg-gradient-primary flex items-center justify-center text-primary-foreground text-sm font-bold">
-                              {bid.driverName.charAt(0)}
-                            </div>
+                            <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold">{bid.driverName.charAt(0)}</div>
                             <div>
-                              <div className="flex items-center gap-2">
-                                <span className="text-sm font-semibold text-card-foreground">{bid.driverName}</span>
-                                <span className="flex items-center gap-0.5 text-xs text-accent">
-                                  <Star className="w-3 h-3 fill-current" /> {bid.rating}
-                                </span>
+                              <div className="flex items-center gap-1">
+                                <span className="text-sm font-bold">{bid.driverName}</span>
+                                <span className="text-xs text-accent flex items-center"><Star className="w-3 h-3 fill-current mr-0.5" /> {bid.rating}</span>
                               </div>
-                              <p className="text-xs text-muted-foreground">{bid.vehicle} · {bid.eta} away · {bid.trips} trips</p>
+                              <p className="text-[10px] text-muted-foreground">{bid.vehicle} • {bid.eta} away</p>
                             </div>
                           </div>
                           <div className="flex items-center gap-3">
-                            <span className="text-lg font-heading font-bold text-foreground">KES {bid.amount}</span>
-                            <Button variant="hero" size="sm">
-                              <Check className="w-4 h-4" /> Accept
-                            </Button>
+                            <span className="font-heading font-bold">R{bid.amount}</span>
+                            <Button size="sm" className="bg-primary text-white rounded-lg h-8">Accept</Button>
                           </div>
                         </div>
                       ))}
