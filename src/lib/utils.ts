@@ -9,14 +9,19 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 /** * 🛡️ The Global Safety Gate
- * Checks if a driver is allowed to see new trips based on their debt.
+ * Checks if a driver is allowed to see new trips based on their debt and KYC status.
  * * @param debt - The current amount the driver owes (e.g., 55.00)
- * @param limitFromAdmin - The threshold set from your SettingsContext/Database (e.g., 50.00)
+ * @param limit - The threshold set from Admin Panel (e.g., 50.00)
+ * @param kycStatus - The driver's verification state ('NOT_STARTED', 'PENDING', 'VERIFIED')
  */
-export const isDriverEligible = (debt: number, limitFromAdmin: number): boolean => {
-  // If debt is less than or equal to the limit, they are "Eligible" (true)
-  // If they owe more than the limit, they are "Blocked" (false)
-  return debt <= limitFromAdmin;
+export const isDriverActive = (debt: number, limit: number, kycStatus: string) => {
+  const isDebtFree = debt <= limit;
+  const isVerified = kycStatus === 'VERIFIED';
+  
+  return {
+    canWork: isDebtFree && isVerified,
+    reason: !isVerified ? 'KYC_PENDING' : !isDebtFree ? 'DEBT_BLOCKED' : null
+  };
 };
 
 /** * 📊 RideoBid Pricing & Market Logic
