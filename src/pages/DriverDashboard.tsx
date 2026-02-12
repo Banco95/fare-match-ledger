@@ -4,9 +4,11 @@ import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 
-// 🛑 Logic Imports
-import { isDriverEligible } from "@/lib/utils";
+// 🛑 Logic & Context Imports
+import { isDriverActive } from "@/lib/utils";
+import { useAppSettings } from "@/contexts/SettingsContext";
 import DriverBlockedScreen from "@/components/DriverBlockedScreen";
+import KYCUpload from "@/components/KYCUpload";
 
 interface NearbyRequest {
   id: string;
@@ -26,31 +28,45 @@ const mockRequests: NearbyRequest[] = [
 ];
 
 const DriverDashboard = () => {
+  const { settings } = useAppSettings();
   const [isOnline, setIsOnline] = useState(true);
   
-  // 💰 State for the 6% Commission Ledger
+  // 💰 Driver State (In a real app, this comes from your Supabase/Backend auth user)
   const [currentDebt, setCurrentDebt] = useState(55.00); 
-  const [bidAmounts, setBidAmounts] = useState<Record<string, number>>({});
+  const [kycStatus, setKycStatus] = useState<'NOT_STARTED' | 'PENDING' | 'VERIFIED'>('NOT_STARTED');
+  
+  const debtPercentage = (currentDebt / settings.debtLimit) * 100;
 
-  const debtLimit = 50.00; // R50 limit before lockout
-  const debtPercentage = (currentDebt / debtLimit) * 100;
-
-  // ✅ The Unlock Logic: Triggered after successful Mobile Money payment
+  // ✅ The Unlock Logic: Reset debt after payment
   const handleManualUnlock = () => {
     setCurrentDebt(0);
-    toast.success("Payment Received! Your account is now active.");
+    toast.success("Payment Received! Account active.");
   };
 
-  // 🛑 GUARD: Check if driver is blocked before rendering dashboard
-  if (!isDriverEligible(currentDebt)) {
-    return (
-      <DriverBlockedScreen 
-        debtAmount={currentDebt} 
-        onUnlock={handleManualUnlock} 
-      />
-    );
+  // ✅ KYC Completion: Move to pending after upload
+  const handleKYCComplete = () => {
+    setKycStatus('PENDING');
+    toast.info("ID uploaded. Verification in progress.");
+  };
+
+  // 🛑 GUARD: Multi-stage check for Eligibility
+  const { canWork, reason } = isDriverActive(currentDebt, settings.debtLimit, kycStatus);
+
+  if (!canWork) {
+    if (reason === 'KYC_PENDING') {
+      return <KYCUpload onComplete={handleKYCComplete} />;
+    }
+    if (reason === 'DEBT_BLOCKED') {
+      return (
+        <DriverBlockedScreen 
+          debtAmount={currentDebt} 
+          onUnlock={handleManualUnlock} 
+        />
+      );
+    }
   }
 
+  // 🟢 RENDER DASHBOARD (Only if verified and debt-free)
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
@@ -94,18 +110,17 @@ const DriverDashboard = () => {
           
           <div className="flex items-end justify-between mb-4">
             <div>
-              <p className="text-sm text-muted-foreground mb-1">Unpaid Fees (6%)</p>
+              <p className="text-sm text-muted-foreground mb-1">Unpaid Fees ({settings.commissonRate * 100}%)</p>
               <p className="text-3xl font-heading font-bold text-destructive">
                 R {currentDebt.toFixed(2)}
               </p>
             </div>
             <div className="text-right">
               <p className="text-sm text-muted-foreground mb-1">Max Limit</p>
-              <p className="text-lg font-heading font-semibold text-foreground">R {debtLimit.toFixed(2)}</p>
+              <p className="text-lg font-heading font-semibold text-foreground">R {settings.debtLimit.toFixed(2)}</p>
             </div>
           </div>
 
-          {/* Progress bar */}
           <div className="w-full h-2 rounded-full bg-muted overflow-hidden">
             <div
               className={`h-full rounded-full transition-all duration-500 ${
@@ -120,7 +135,7 @@ const DriverDashboard = () => {
             <Button 
               variant="outline" 
               size="sm" 
-              className="bg-emerald-600/10 text-emerald-600 border-emerald-600/20 hover:bg-emerald-600 hover:text-white"
+              className="bg-emerald-600/10 text-emerald-600 border-emerald-600/20 hover:bg-emerald-600 hover:text-white font-bold"
             >
               <TrendingDown className="w-4 h-4 mr-2" /> Pay via MoMo
             </Button>
@@ -130,8 +145,8 @@ const DriverDashboard = () => {
         {/* Nearby Requests */}
         <div className="mb-6 flex items-center justify-between">
           <h2 className="text-xl font-heading font-bold text-foreground">Nearby Requests</h2>
-          <span className="flex items-center gap-1 text-sm text-primary">
-            <Navigation className="w-4 h-4 animate-bounce" /> Live
+          <span className="flex items-center gap-1 text-sm text-primary font-bold">
+            <Navigation className="w-4 h-4 animate-bounce" /> Live Feed
           </span>
         </div>
 
@@ -162,21 +177,21 @@ const DriverDashboard = () => {
                   </div>
                 </div>
                 
-                <div className="flex items-center gap-2 mb-4 text-xs text-muted-foreground">
+                <div className="flex items-center gap-2 mb-4 text-xs text-muted-foreground font-medium">
                   <Star className="w-3 h-3 text-accent fill-current" /> {req.riderRating} · {req.riderName}
                 </div>
 
                 <div className="flex items-center gap-2">
-                  <Button variant="hero" size="sm" className="flex-1">
+                  <Button variant="hero" size="sm" className="flex-1 font-bold">
                     Accept R {req.suggestedPrice}
                   </Button>
                   <div className="flex items-center gap-1">
                     <input
                       type="number"
                       placeholder="Your bid"
-                      className="w-24 px-3 py-2 rounded-lg bg-muted border border-border text-sm"
+                      className="w-24 px-3 py-2 rounded-lg bg-muted border border-border text-sm font-bold"
                     />
-                    <Button variant="outline" size="sm">Bid</Button>
+                    <Button variant="outline" size="sm" className="font-bold">Bid</Button>
                   </div>
                 </div>
               </motion.div>
