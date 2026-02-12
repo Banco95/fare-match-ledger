@@ -1,102 +1,128 @@
 import { useState } from "react";
-import { Upload, FileCheck, ShieldAlert, Camera, Loader2, CheckCircle } from "lucide-react";
+import { Camera, ShieldCheck, Loader2, CheckCircle2, UserCheck, Smartphone } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { motion } from "framer-motion";
+import { toast } from "sonner";
+
+type KYCStep = "ID_FRONT" | "ID_BACK" | "SELFIE_WITH_ID" | "FACE_CLOSEUP" | "PROCESSING" | "SUCCESS";
 
 const KYCUpload = ({ onComplete }: { onComplete: () => void }) => {
-  const [step, setStep] = useState<"id_front" | "id_back" | "submitting" | "pending">("id_front");
-  const [image, setImage] = useState<string | null>(null);
+  const [currentStep, setCurrentStep] = useState<KYCStep>("ID_FRONT");
+  const [uploads, setUploads] = useState<Record<string, string>>({});
+  const [isUploading, setIsUploading] = useState(false);
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const stepInfo = {
+    ID_FRONT: { title: "ID Front", desc: "Clear photo of the front of your South African ID" },
+    ID_BACK: { title: "ID Back", desc: "Clear photo of the back of your ID card" },
+    SELFIE_WITH_ID: { title: "ID Selfie", desc: "Hold your ID clearly next to your face" },
+    FACE_CLOSEUP: { title: "Live Face", desc: "A clear photo of your face looking forward" },
+  };
+
+  const handleCapture = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       const reader = new FileReader();
       reader.onloadend = () => {
-        setImage(reader.result as string);
+        setUploads(prev => ({ ...prev, [currentStep]: reader.result as string }));
       };
       reader.readAsDataURL(file);
     }
   };
 
-  const proceed = () => {
-    if (step === "id_front") {
-      setImage(null);
-      setStep("id_back");
-    } else {
-      setStep("submitting");
-      // Simulate API upload to Supabase/Cloudinary
-      setTimeout(() => setStep("pending"), 3000);
-    }
+  const nextStep = async () => {
+    setIsUploading(true);
+    
+    // Simulating progress
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    setIsUploading(false);
+
+    if (currentStep === "ID_FRONT") setCurrentStep("ID_BACK");
+    else if (currentStep === "ID_BACK") setCurrentStep("SELFIE_WITH_ID");
+    else if (currentStep === "SELFIE_WITH_ID") setCurrentStep("FACE_CLOSEUP");
+    else handleFinalSubmit();
   };
 
-  if (step === "pending") {
+  const handleFinalSubmit = async () => {
+    setCurrentStep("PROCESSING");
+    
+    // --- 🤖 AUTO-VERIFICATION LOGIC ---
+    // In a production app, you would send these 4 images to an AI Service:
+    // 1. OCR: Extract name/ID number from ID_FRONT.
+    // 2. Facial Match: Compare FACE_CLOSEUP with the photo on ID_FRONT.
+    // 3. Liveness Check: Compare SELFIE_WITH_ID to FACE_CLOSEUP.
+    
+    setTimeout(() => {
+      setCurrentStep("SUCCESS");
+      toast.success("AI Verification Successful!");
+    }, 4000);
+  };
+
+  if (currentStep === "PROCESSING") {
     return (
-      <div className="min-h-screen bg-background flex flex-col items-center justify-center p-8 text-center">
-        <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mb-6">
-          <FileCheck className="w-10 h-10 text-primary" />
-        </div>
-        <h1 className="text-2xl font-heading font-bold mb-2">Verification Pending</h1>
-        <p className="text-muted-foreground text-sm max-w-xs mb-8">
-          Our team is verifying your South African ID. This usually takes 2–4 hours.
-        </p>
-        <Button onClick={onComplete} variant="outline" className="w-full rounded-2xl h-14">
-          Return to Dashboard
-        </Button>
+      <div className="min-h-screen flex flex-col items-center justify-center p-8 text-center space-y-6">
+        <Loader2 className="w-16 h-16 text-primary animate-spin" />
+        <h2 className="text-2xl font-heading font-bold">Auto-Verifying...</h2>
+        <p className="text-muted-foreground text-sm">Our AI is matching your selfie with your South African ID details.</p>
       </div>
     );
   }
 
+  if (currentStep === "SUCCESS") {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center p-8 text-center space-y-6">
+        <div className="w-20 h-20 bg-emerald-500/20 rounded-full flex items-center justify-center">
+          <CheckCircle2 className="w-12 h-12 text-emerald-600" />
+        </div>
+        <h2 className="text-2xl font-heading font-bold">Verified!</h2>
+        <p className="text-muted-foreground">Your identity has been confirmed. Welcome to RideoBid.</p>
+        <Button onClick={onComplete} className="w-full max-w-xs h-14 rounded-2xl font-bold">Start Earning</Button>
+      </div>
+    );
+  }
+
+  const activeStepData = stepInfo[currentStep as keyof typeof stepInfo];
+
   return (
-    <div className="min-h-screen bg-background p-6">
-      <header className="mb-10 text-center">
-        <h1 className="text-2xl font-heading font-bold mb-2">Identify Verification</h1>
-        <p className="text-muted-foreground text-sm">Upload your SA ID or Passport to start earning.</p>
+    <div className="min-h-screen bg-background p-6 flex flex-col">
+      <header className="mb-8">
+        <div className="flex justify-between items-center mb-2">
+          <h1 className="text-2xl font-heading font-bold">KYC Verification</h1>
+          <span className="text-xs font-bold text-primary px-3 py-1 bg-primary/10 rounded-full">Step {Object.keys(uploads).length + 1} of 4</span>
+        </div>
+        <p className="text-muted-foreground text-sm">{activeStepData.desc}</p>
       </header>
 
-      <div className="max-w-md mx-auto space-y-8">
-        {/* ID Template View */}
-        <div className="relative aspect-[1.6/1] bg-card border-2 border-dashed border-border rounded-3xl overflow-hidden flex flex-col items-center justify-center group">
-          {image ? (
-            <img src={image} alt="Preview" className="w-full h-full object-cover" />
+      <div className="flex-1 flex flex-col items-center justify-center">
+        <div className="relative w-full max-w-sm aspect-[3/4] bg-card border-2 border-dashed border-border rounded-[2.5rem] flex flex-col items-center justify-center overflow-hidden">
+          {uploads[currentStep] ? (
+            <img src={uploads[currentStep]} alt="Preview" className="w-full h-full object-cover" />
           ) : (
-            <div className="text-center p-6">
-              <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mx-auto mb-4">
-                <Camera className="w-8 h-8 text-muted-foreground" />
-              </div>
-              <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
-                {step === "id_front" ? "Front of ID Card" : "Back of ID Card"}
-              </p>
+            <div className="text-center p-8">
+              {currentStep === "SELFIE_WITH_ID" ? <UserCheck className="w-16 h-16 mx-auto mb-4 text-primary/40" /> : <Smartphone className="w-16 h-16 mx-auto mb-4 text-primary/40" />}
+              <p className="text-xs font-bold uppercase text-muted-foreground">Tap to take photo</p>
             </div>
           )}
-          
           <input 
             type="file" 
             accept="image/*" 
-            capture="environment"
-            onChange={handleFileChange}
+            capture="user" 
+            onChange={handleCapture}
             className="absolute inset-0 opacity-0 cursor-pointer"
           />
         </div>
+      </div>
 
-        <div className="bg-amber-500/5 border border-amber-500/20 rounded-2xl p-4 flex gap-3">
-          <ShieldAlert className="w-5 h-5 text-amber-600 shrink-0" />
-          <p className="text-[11px] text-amber-800 leading-relaxed">
-            Ensure all details are readable and the card is within the frame. Blurred photos will be rejected.
-          </p>
-        </div>
-
+      <footer className="mt-8 space-y-3">
         <Button 
-          disabled={!image || step === "submitting"}
-          onClick={proceed}
+          disabled={!uploads[currentStep] || isUploading}
+          onClick={nextStep}
           className="w-full h-16 rounded-2xl text-lg font-bold shadow-glow"
         >
-          {step === "submitting" ? (
-            <Loader2 className="w-6 h-6 animate-spin" />
-          ) : (
-            `Upload ${step === "id_front" ? "Front" : "Back"}`
-          )}
+          {isUploading ? <Loader2 className="w-5 h-5 animate-spin" /> : "Continue"}
         </Button>
-      </div>
+        <p className="text-[10px] text-center text-muted-foreground font-medium uppercase">
+          <ShieldCheck className="w-3 h-3 inline mr-1" /> Secure encrypted upload
+        </p>
+      </footer>
     </div>
   );
 };
