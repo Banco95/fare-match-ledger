@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 import { Phone, MessageCircle, Star, Car, ShieldCheck, MapPin } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Button } from "../components/ui/button";
 
 const RiderMatchSuccess = () => {
   // Mock data for the accepted driver

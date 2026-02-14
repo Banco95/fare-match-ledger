@@ -3,7 +3,7 @@ import {
   MapPin, Wallet, AlertTriangle, Navigation, Star, 
   TrendingDown, Lock, Smartphone, LogOut, Zap 
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Button } from "../components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 import { supabase } from "@/lib/supabase";
@@ -11,8 +11,8 @@ import { supabase } from "@/lib/supabase";
 // 🛑 Logic & Context Imports
 import { isDriverActive } from "@/lib/utils";
 import { useAppSettings } from "@/contexts/SettingsContext";
-import DriverBlockedScreen from "@/components/DriverBlockedScreen";
-import KYCUpload from "@/components/KYCUpload";
+import DriverBlockedScreen from "../components/DriverBlockedScreen";
+import KYCUpload from "../components/KYCUpload";
 
 interface NearbyRequest {
   id: string;

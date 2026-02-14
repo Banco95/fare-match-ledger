@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { ArrowLeft, Info, TrendingUp, Zap } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Button } from "../components/ui/button";
 import { motion } from "framer-motion";
 import { calculateMarketAverage } from "@/lib/utils";
 

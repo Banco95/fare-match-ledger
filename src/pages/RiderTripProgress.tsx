@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { Shield, Navigation, Phone, MessageSquare, AlertTriangle, ChevronUp } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Button } from "../components/ui/button";
 
 const RiderTripProgress = () => {
   const [showDetails, setShowDetails] = useState(false);

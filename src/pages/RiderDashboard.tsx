@@ -3,7 +3,7 @@ import {
   MapPin, Clock, DollarSign, Zap, Navigation, Wallet, 
   ChevronRight, Star, AlertTriangle 
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Button } from "../components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 
@@ -11,7 +11,7 @@ import { toast } from "sonner";
 // Vi simulerar isDriverEligible här, men du kan flytta den till en utils-fil
 const isDriverEligible = (debt: number) => debt <= 50; 
 
-import DriverBlockedScreen from "@/components/DriverBlockedScreen";
+import DriverBlockedScreen from "../components/DriverBlockedScreen";
 
 interface LiveRequest {
   id: string;
