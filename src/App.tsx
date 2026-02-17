@@ -6,7 +6,7 @@ import DriverDashboard from "./pages/DriverDashboard";
 import RiderCreateRequest from "./pages/RiderCreateRequest";
 import RiderMatchSuccess from "./pages/RiderMatchSuccess";
 import RiderTripProgress from "./pages/RiderTripProgress";
-import AdminVerificationQueue from "./AdminVerificationQueue";
+import AdminVerificationQueue from "./AdminGlobalLedger";
 import { SettingsProvider } from "./contexts/SettingsContext";
 
 function App() {

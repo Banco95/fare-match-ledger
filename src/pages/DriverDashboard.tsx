@@ -10,9 +10,9 @@ import { supabase } from "@/lib/supabase";
 
 // 🛑 Logic & Context Imports
 import { isDriverActive } from "@/lib/utils";
-import { useAppSettings } from "@/contexts/SettingsContext";
-import DriverBlockedScreen from "../components/DriverBlockedScreen";
-import KYCUpload from "../components/KYCUpload";
+import { useSettings } from "@/contexts/SettingsContext";
+import DriverBlockedScreen from "../DriverBlockedScreen";
+import KYCUpload from "../KYCUpload";
 
 interface NearbyRequest {
   id: string;
@@ -31,7 +31,7 @@ const mockRequests: NearbyRequest[] = [
 ];
 
 const DriverDashboard = () => {
-  const { settings } = useAppSettings(); 
+  const { settings } = useSettings(); 
   const [isOnline, setIsOnline] = useState(true);
   const [currentDriverId, setCurrentDriverId] = useState<string | null>(null);
   const [currentDebt, setCurrentDebt] = useState(0.00); 
